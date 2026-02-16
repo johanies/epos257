@@ -139,6 +139,14 @@ prod-full-test: prod-build prod-db-setup prod-test
 deploy: build-on-server prod-pull migrate prod-up
 	@echo "Deployed $(IMAGE):$(TAG)"
 
+# Rychlý deploy pro menší změny (git pull + restart)
+quick-deploy:
+	ssh $(SERVER) 'cd $(APP_DIR) && \
+	  git pull origin main && \
+	  export ENV_FILE=.env.prod && \
+	  docker compose -f docker-compose.yml -f docker-compose.prod.yml restart web'
+	@echo "Quick deploy completed"
+
 # Produkční logy
 logs:
 	ssh $(SERVER) 'cd $(APP_DIR) && \

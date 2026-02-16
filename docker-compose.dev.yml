@@ -1,0 +1,14 @@
+services:
+  web:
+    volumes:
+      - ./app:/rails/app
+      - ./config:/rails/config
+      - ./db:/rails/db
+      - ./lib:/rails/lib
+      - ./public:/rails/public
+      - ./storage:/rails/storage
+      - ./tmp:/rails/tmp
+      - ./log:/rails/log
+    environment:
+      - RAILS_ENV=development
+      - RACK_ENV=development

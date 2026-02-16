@@ -89,13 +89,11 @@ seed-prod:
 
 # Lokální testování
 local-dev:
-	docker compose up -d db redis
-	sleep 3
-	@echo "Starting local development server..."
+	docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d db redis web
+	@echo "Starting local development server with hot reload..."
+	@echo "App is running at http://localhost:3000"
+	@echo "Changes in app/, config/, db/, lib/ will be reflected immediately"
 	@echo "Press Ctrl+C to stop"
-	@echo "Database and Redis are running in Docker"
-	@echo "Starting Rails server with live reload..."
-	DB_HOST=localhost DB_PORT=5432 bin/dev
 
 local-docker-build:
 	docker build -t $(IMAGE):test .

@@ -1,0 +1,8 @@
+services:
+  web:
+    image: docker.io/johanies/epos257:${TAG:-latest}
+    ports:
+      - "3103:3000"
+  
+  jobs:
+    image: docker.io/johanies/epos257:${TAG:-latest}

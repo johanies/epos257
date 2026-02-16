@@ -1,0 +1,17 @@
+#!/bin/bash -e
+# Updated: 2025-02-16 - Docker entrypoint for epos257
+
+# Enable jemalloc for reduced memory usage and latency.
+if [ -z "${LD_PRELOAD+x}" ]; then
+    LD_PRELOAD=$(find /usr/lib -name libjemalloc.so.2 -print -quit)
+    export LD_PRELOAD
+fi
+
+# If running the rails server then create or migrate existing database and precompile assets
+if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
+  ./bin/rails db:prepare
+  echo "Precompiling assets..."
+  ./bin/rails assets:precompile
+fi
+
+exec "${@}"

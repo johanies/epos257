@@ -1,0 +1,40 @@
+services:
+  web:
+    build: .
+    image: docker.io/johanies/epos257:${TAG:-latest}
+    command: bash -lc "bundle exec rails s -b 0.0.0.0 -p 3000"
+    env_file:
+      - ${ENV_FILE:-.env}   # lokálně načte .env, na serveru přepíšeme na .env.prod
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./storage:/rails/storage
+    ports:
+      - "3000:3000"
+
+  jobs:
+    build: .
+    image: docker.io/johanies/epos257:${TAG:-latest}
+    command: bash -lc "bundle exec rails solid_queue:start"
+    env_file:
+      - ${ENV_FILE:-.env}
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./storage:/rails/storage
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+
+volumes:
+  pgdata:

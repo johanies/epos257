@@ -4,7 +4,7 @@ services:
     image: docker.io/johanies/epos257:${TAG:-latest}
     command: bash -lc "bundle exec rails s -b 0.0.0.0 -p 3000"
     env_file:
-      - ${ENV_FILE:-.env}   # lokálně načte .env, na serveru přepíšeme na .env.prod
+      - ${ENV_FILE:-.env.prod}   # lokálně použije .env.prod pokud existuje, jinak .env
     depends_on:
       - db
       - redis
@@ -18,7 +18,7 @@ services:
     image: docker.io/johanies/epos257:${TAG:-latest}
     command: bash -lc "bundle exec rails solid_queue:start"
     env_file:
-      - ${ENV_FILE:-.env}
+      - ${ENV_FILE:-.env.prod}
     depends_on:
       - db
       - redis

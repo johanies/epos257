@@ -53,7 +53,7 @@ migrate:
 	  export ENV_FILE=.env.prod TAG=$(TAG) && \
 	  docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d db redis && \
 	  sleep 5 && \
-	  docker compose -f docker-compose.yml -f docker-compose.prod.yml exec web bin/rails db:migrate'
+	  docker compose -f docker-compose.yml -f docker-compose.prod.yml run --rm web bin/rails db:migrate'
 
 # Seed data na produkci s dvojitým potvrzením
 seed-prod:

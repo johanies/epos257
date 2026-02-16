@@ -41,17 +41,17 @@ dev-up:
 prod-pull:
 	ssh $(SERVER) 'cd $(APP_DIR) && \
 	  export ENV_FILE=.env.prod TAG=$(TAG) && \
-	  docker compose pull web'
+	  docker compose -f docker-compose.yml -f docker-compose.prod.yml pull web'
 
 prod-up:
 	ssh $(SERVER) 'cd $(APP_DIR) && \
 	  export ENV_FILE=.env.prod TAG=$(TAG) && \
-	  docker compose up -d --force-recreate web'
+	  docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --force-recreate web'
 
 migrate:
 	ssh $(SERVER) 'cd $(APP_DIR) && \
 	  export ENV_FILE=.env.prod TAG=$(TAG) && \
-	  docker compose run --rm web bin/rails db:migrate'
+	  docker compose -f docker-compose.yml -f docker-compose.prod.yml run --rm web bin/rails db:migrate'
 
 # Seed data na produkci s dvojitým potvrzením
 seed-prod:
@@ -75,7 +75,7 @@ seed-prod:
 			echo "🚀 Spouštím seed data..."; \
 			ssh $(SERVER) 'cd $(APP_DIR) && \
 				export ENV_FILE=.env.prod TAG=$(TAG) && \
-				docker compose exec web bundle exec rails db:seed'; \
+				docker compose -f docker-compose.yml -f docker-compose.prod.yml exec web bundle exec rails db:seed'; \
 			echo "✅ Seed data úspěšně načtena!"; \
 		else \
 			echo "❌ Zrušeno - nesprávné potvrzení"; \
@@ -143,17 +143,17 @@ deploy: build-on-server prod-pull migrate prod-up
 logs:
 	ssh $(SERVER) 'cd $(APP_DIR) && \
 	  export ENV_FILE=.env.prod && \
-	  docker compose logs --tail=100 -f web'
+	  docker compose -f docker-compose.yml -f docker-compose.prod.yml logs --tail=100 -f web'
 
 logs-all:
 	ssh $(SERVER) 'cd $(APP_DIR) && \
 	  export ENV_FILE=.env.prod && \
-	  docker compose logs --tail=100 -f'
+	  docker compose -f docker-compose.yml -f docker-compose.prod.yml logs --tail=100 -f'
 
 logs-static:
 	ssh $(SERVER) 'cd $(APP_DIR) && \
 	  export ENV_FILE=.env.prod && \
-	  docker compose logs --tail=200 web'
+	  docker compose -f docker-compose.yml -f docker-compose.prod.yml logs --tail=200 web'
 
 # Synchronizace databáze a souborů ze serveru
 sync_db:
@@ -168,7 +168,7 @@ sync_db:
 	@echo "📥 2/5 Stahuji produkční databázi ze serveru..."
 	@ssh $(SERVER) 'cd $(APP_DIR) && \
 		export ENV_FILE=.env.prod && \
-		docker compose exec -T db \
+		docker compose -f docker-compose.yml -f docker-compose.prod.yml exec -T db \
 		pg_dump -U postgres epos257_production' > tmp/prod_dump.sql
 	@echo "✅ Produkční databáze stažena"
 	@echo ""
@@ -213,7 +213,7 @@ push_db:
 			ssh $(SERVER) 'cd $(APP_DIR) && \
 				mkdir -p tmp/db_backups && \
 				export ENV_FILE=.env.prod && \
-				docker compose exec -T db \
+				docker compose -f docker-compose.yml -f docker-compose.prod.yml exec -T db \
 				pg_dump -U postgres epos257_production > tmp/db_backups/backup_$$(date +%Y%m%d_%H%M%S).sql'; \
 			echo "✅ Záloha vytvořena na serveru"; \
 			echo ""; \
@@ -230,16 +230,16 @@ push_db:
 			echo "🗑️  4/6 Resetuji produkční databázi..."; \
 			ssh $(SERVER) 'cd $(APP_DIR) && \
 				export ENV_FILE=.env.prod && \
-				docker compose exec -T db \
+				docker compose -f docker-compose.yml -f docker-compose.prod.yml exec -T db \
 				dropdb -U postgres --if-exists epos257_production && \
-				docker compose exec -T db \
+				docker compose -f docker-compose.yml -f docker-compose.prod.yml exec -T db \
 				createdb -U postgres epos257_production'; \
 			echo "✅ Databáze vytvořena"; \
 			echo ""; \
 			echo "📝 5/6 Importuji lokální data na server..."; \
 			ssh $(SERVER) 'cd $(APP_DIR) && \
 				export ENV_FILE=.env.prod && \
-				docker compose exec -T db \
+				docker compose -f docker-compose.yml -f docker-compose.prod.yml exec -T db \
 				psql -U postgres epos257_production < tmp/local_dump.sql > /dev/null && \
 				rm tmp/local_dump.sql'; \
 			echo "✅ Data naimportována"; \

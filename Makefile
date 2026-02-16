@@ -139,13 +139,17 @@ prod-full-test: prod-build prod-db-setup prod-test
 deploy: build-on-server prod-pull migrate prod-up
 	@echo "Deployed $(IMAGE):$(TAG)"
 
-# Rychlý deploy pro menší změny (git pull + restart)
+# Rychlý deploy pro menší změny (git pull + rebuild image + restart)
 quick-deploy:
 	ssh $(SERVER) 'cd $(APP_DIR) && \
 	  git pull origin main && \
+	  export $$(grep -E "^DOCKER_" .env.prod | xargs) && \
+	  export DOCKER_CONFIG="$$(mktemp -d)" && \
+	  printf "%s" "$$DOCKER_PASSWORD" | docker login --username "$$DOCKER_USERNAME" --password-stdin docker.io && \
+	  docker build -t $(IMAGE):$(TAG) -t $(IMAGE):latest . && \
 	  export ENV_FILE=.env.prod && \
-	  docker compose -f docker-compose.yml -f docker-compose.prod.yml restart web'
-	@echo "Quick deploy completed"
+	  docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --force-recreate web'
+	@echo "Quick deploy completed - rebuilt image $(IMAGE):$(TAG)"
 
 # Produkční logy
 logs:
